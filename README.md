@@ -58,16 +58,16 @@ resolv-retry infinite
 nobind
 persist-key
 persist-tun
-ca ca.crt
+cipher aes-128-cbc
+auth sha1
 tls-client
 remote-cert-tls server
 auth-user-pass authuser
-auth-nocache
 comp-lzo
 verb 1
 reneg-sec 0
-crl-verify crl.pem
-keepalive 10 120
+crl-verify crl.rsa.2048.pem
+ca ca.rsa.2048.crt
 EOF
 ```
 
@@ -105,22 +105,23 @@ ssh root@192.168.1.1
 Start the VPN:
 
 ```
-openvpn --cd /etc/openvpn --config /etc/openvpn/piageneric.ovpn --remote us-east.privateinternetaccess.com 1194
+openvpn --cd /etc/openvpn --config /etc/openvpn/piageneric.ovpn --remote us-siliconvalley.privateinternetaccess.com 1198
 ```
 
 Confirm that output looks something like this:
 
 ```
-root@OpenWrt:~# openvpn --cd /etc/openvpn --config /etc/openvpn/piageneric.ovpn --remote us-east.privateinternetaccess.com 1194
-Mon Nov 17 23:08:56 2014 OpenVPN 2.3.4 mips-openwrt-linux-gnu [SSL (OpenSSL)] [LZO] [EPOLL] [MH] [IPv6] built on Sep 20 2014
-Mon Nov 17 23:08:56 2014 library versions: OpenSSL 1.0.1j 15 Oct 2014, LZO 2.08
-Mon Nov 17 23:08:56 2014 UDPv4 link local: [undef]
-Mon Nov 17 23:08:56 2014 UDPv4 link remote: [AF_INET]108.61.57.214:1194
-Mon Nov 17 23:09:00 2014 [Private Internet Access] Peer Connection Initiated with [AF_INET]108.61.57.214:1194
-Mon Nov 17 23:09:02 2014 TUN/TAP device tun0 opened
-Mon Nov 17 23:09:02 2014 do_ifconfig, tt->ipv6=0, tt->did_ifconfig_ipv6_setup=0
-Mon Nov 17 23:09:02 2014 /sbin/ifconfig tun0 10.198.1.10 pointopoint 10.198.1.9 mtu 1500
-Mon Nov 17 23:09:02 2014 Initialization Sequence Completed
+root@OpenWrt:~# openvpn --cd /etc/openvpn --config /etc/openvpn/piageneric.ovpn --remote us-siliconvalley.privateinternetaccess.com 1198
+Sun Nov 20 05:07:49 2016 OpenVPN 2.3.6 mips-openwrt-linux-gnu [SSL (OpenSSL)] [LZO] [EPOLL] [MH] [IPv6] built on Jan  6 2015
+Sun Nov 20 05:07:49 2016 library versions: OpenSSL 1.0.2f  28 Jan 2016, LZO 2.08
+Sun Nov 20 05:07:49 2016 UDPv4 link local: [undef]
+Sun Nov 20 05:07:49 2016 UDPv4 link remote: [AF_INET]104.156.228.162:1198
+Sun Nov 20 05:07:49 2016 WARNING: this configuration may cache passwords in memory -- use the auth-nocache option to prevent this
+Sun Nov 20 05:07:50 2016 [07d5952d3eb922c4cd728b4dd721079f] Peer Connection Initiated with [AF_INET]104.156.228.162:1198
+Sun Nov 20 05:07:53 2016 TUN/TAP device tun0 opened
+Sun Nov 20 05:07:53 2016 do_ifconfig, tt->ipv6=0, tt->did_ifconfig_ipv6_setup=0
+Sun Nov 20 05:07:53 2016 /sbin/ifconfig tun0 10.7.10.6 pointopoint 10.7.10.5 mtu 1500
+Sun Nov 20 05:07:53 2016 Initialization Sequence Completed
 ```
 
 Check to see if tunnel interface exists (You will have to open a second SSH connection because the openvpn command above must be running):
@@ -153,10 +154,12 @@ uci add_list dhcp.lan.dhcp_option="6,209.222.18.222,209.222.18.218"
 uci commit dhcp
 ```
 
+Go to Interfaces - WAN, Advanced Settings, and uncheck "Use DNS servers advertised by peer".  This will show "Use custom DNS servers".  Enter `209.222.18.222` and `209.222.18.218` for privateinternetaccess.  This will help to make sure DNS leak tests do not fail.
+
 Run VPN at startup. Go to Luci web interface, go to System -> Startup and add this before the `exit 0`:
 
 ```
-openvpn --cd /etc/openvpn --config /etc/openvpn/piageneric.ovpn --remote us-east.privateinternetaccess.com 1194 &
+openvpn --cd /etc/openvpn --config /etc/openvpn/piageneric.ovpn --remote us-siliconvalley.privateinternetaccess.com 1198 &
 ```
 
 Reboot for DHCP and startup changes to take effect:
