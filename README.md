@@ -63,9 +63,11 @@ auth sha1
 tls-client
 remote-cert-tls server
 auth-user-pass authuser
+auth-nocache
 comp-lzo
 verb 1
 reneg-sec 0
+keepalive 10 120
 crl-verify crl.rsa.2048.pem
 ca ca.rsa.2048.crt
 EOF
